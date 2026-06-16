@@ -1,0 +1,291 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>明天吃什么 · 明日菜单</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Ma+Shan+Zheng&family=Noto+Serif+SC:wght@500;600;700&family=Noto+Sans+SC:wght@400;500;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --paper:#F4EAD3; --card:#FFFCF3; --ink:#3A2317; --ink-soft:#7A5C44;
+    --braise:#8C3B1B; --tomato:#D6452F; --yolk:#E2A012; --scallion:#5C7A3A;
+    --line:#E2D2AE; --seal:#C0392B;
+  }
+  *{box-sizing:border-box;}
+  html,body{margin:0;padding:0;}
+  body{
+    font-family:"Noto Sans SC","PingFang SC","Microsoft YaHei",sans-serif;
+    background:radial-gradient(140% 90% at 50% -10%, #FBF3DF 0%, var(--paper) 55%, #ECDFBE 100%);
+    color:var(--ink); min-height:100dvh; display:flex; align-items:flex-start; justify-content:center;
+    padding:clamp(16px,4vw,48px) 16px 64px; -webkit-font-smoothing:antialiased;
+  }
+  .ticket{
+    width:100%; max-width:640px; background:var(--card); border-radius:6px; border:1px solid var(--line);
+    box-shadow:0 1px 0 #fff inset, 0 18px 40px -22px rgba(58,35,23,.55), 0 2px 6px -2px rgba(58,35,23,.18);
+    padding:clamp(22px,4.5vw,40px); position:relative;
+  }
+  .ticket::before{
+    content:""; position:absolute; left:0; right:0; top:-9px; height:10px;
+    background:radial-gradient(circle at 6px 9px, transparent 5px, var(--card) 5.5px) repeat-x;
+    background-size:12px 12px; filter:drop-shadow(0 -1px 0 var(--line));
+  }
+  .head{display:flex;align-items:flex-start;justify-content:space-between;gap:12px;}
+  .kicker{font-size:12px;letter-spacing:.32em;color:var(--ink-soft);text-transform:uppercase;font-weight:700;}
+  .title{font-family:"Ma Shan Zheng",cursive;font-size:clamp(46px,12vw,76px);line-height:.95;color:var(--braise);margin:6px 0 2px;letter-spacing:.04em;}
+  .subtitle{font-size:14px;color:var(--ink-soft);line-height:1.6;max-width:42ch;}
+  .subtitle b{color:var(--tomato);font-weight:700;}
+  .seal{
+    flex:0 0 auto;width:62px;height:62px;border-radius:8px;border:2px solid var(--seal);color:var(--seal);
+    display:flex;flex-direction:column;align-items:center;justify-content:center;font-weight:700;line-height:1.1;
+    transform:rotate(-7deg);box-shadow:0 0 0 2px #fff,0 0 0 3px rgba(192,57,43,.35);font-family:"Noto Serif SC",serif;
+  }
+  .seal .seal-top{font-size:11px;letter-spacing:.18em;}
+  .seal .seal-date{font-size:18px;}
+  .seal .seal-dow{font-size:10px;letter-spacing:.1em;}
+  .perf{border:none;border-top:2px dashed var(--line);margin:22px 0;height:0;}
+  .draw{
+    display:block;width:100%;cursor:pointer;font-family:"Noto Sans SC",sans-serif;font-size:18px;font-weight:700;
+    color:#FFF7EE;letter-spacing:.12em;background:var(--tomato);border:none;border-radius:4px;padding:16px 20px;
+    box-shadow:0 6px 0 #A8331F,0 14px 22px -12px rgba(168,51,31,.7);
+    transition:transform .08s ease,box-shadow .08s ease,background .2s ease;
+  }
+  .draw:hover{background:#cf3e29;}
+  .draw:active{transform:translateY(4px);box-shadow:0 2px 0 #A8331F,0 8px 14px -10px rgba(168,51,31,.7);}
+  .draw:focus-visible{outline:3px solid var(--yolk);outline-offset:3px;}
+  .result{margin-top:24px;}
+  .result[hidden]{display:none;}
+  .stamp-ok{display:flex;align-items:center;gap:8px;justify-content:center;font-size:13px;font-weight:700;letter-spacing:.06em;color:var(--scallion);margin-bottom:16px;}
+  .stamp-ok .tick{display:inline-grid;place-items:center;width:20px;height:20px;border-radius:50%;background:var(--scallion);color:#fff;font-size:12px;}
+  .picks{display:grid;grid-template-columns:1fr 1fr;gap:14px;}
+  @media(max-width:520px){.picks{grid-template-columns:1fr;}}
+  .dish{position:relative;background:#FFFDF8;border:1px solid var(--line);border-radius:5px;padding:18px 18px 16px 22px;overflow:hidden;animation:rise .42s cubic-bezier(.2,.8,.25,1) both;}
+  .dish::before{content:"";position:absolute;left:0;top:0;bottom:0;width:6px;background:var(--braise);}
+  .dish:nth-child(2){animation-delay:.09s;}
+  .dish:nth-child(2)::before{background:var(--yolk);}
+  .dish .no{font-family:"Noto Serif SC",serif;font-size:12px;font-weight:700;color:var(--ink-soft);letter-spacing:.1em;}
+  .namebtn{display:flex;flex-wrap:wrap;align-items:baseline;gap:4px 8px;background:none;border:none;padding:0;margin:2px 0 12px;cursor:pointer;text-align:left;}
+  .namebtn .name-text{font-family:"Noto Serif SC",serif;font-weight:700;font-size:clamp(22px,5.5vw,27px);line-height:1.25;color:var(--ink);}
+  .namebtn .go{font-family:"Noto Sans SC",sans-serif;font-size:12px;font-weight:700;color:var(--tomato);letter-spacing:.02em;white-space:nowrap;}
+  .namebtn:hover .name-text{color:var(--braise);text-decoration:underline;text-decoration-color:var(--yolk);text-underline-offset:4px;}
+  .namebtn:hover .go{text-decoration:underline;}
+  .namebtn:focus-visible{outline:3px solid var(--yolk);outline-offset:3px;border-radius:3px;}
+  .chips{display:flex;flex-wrap:wrap;gap:6px;}
+  .chip{display:inline-flex;align-items:center;gap:4px;font-size:12.5px;font-weight:500;color:var(--braise);background:#F7EAD0;border:1px solid #EAD7AE;border-radius:999px;padding:4px 10px 4px 8px;}
+  .chip .em{font-size:13px;line-height:1;}
+  .again-row{display:flex;gap:12px;margin-top:18px;flex-wrap:wrap;}
+  .again{flex:1 1 auto;cursor:pointer;font-family:inherit;font-size:15px;font-weight:700;color:var(--braise);background:transparent;border:1.5px solid var(--braise);border-radius:4px;padding:12px 14px;letter-spacing:.06em;transition:background .15s ease,color .15s ease;}
+  .again:hover{background:var(--braise);color:#FFF7EE;}
+  .again:focus-visible{outline:3px solid var(--yolk);outline-offset:2px;}
+  .menu{margin-top:26px;}
+  .menu summary{cursor:pointer;list-style:none;font-size:13px;font-weight:700;letter-spacing:.08em;color:var(--ink-soft);display:flex;align-items:center;gap:8px;padding:6px 0;}
+  .menu summary::-webkit-details-marker{display:none;}
+  .menu summary .arrow{transition:transform .2s ease;display:inline-block;}
+  .menu[open] summary .arrow{transform:rotate(90deg);}
+  .menu ol{margin:10px 0 0;padding:0;list-style:none;columns:2;column-gap:24px;font-size:13.5px;}
+  @media(max-width:480px){.menu ol{columns:1;}}
+  .menu li{padding:0;break-inside:avoid;}
+  .menu .mitem{display:flex;gap:6px;width:100%;background:none;border:none;padding:4px 0;font:inherit;font-size:13.5px;color:var(--ink-soft);text-align:left;cursor:pointer;border-radius:3px;}
+  .menu .mitem span{color:var(--braise);font-weight:700;font-family:"Noto Serif SC",serif;}
+  .menu .mitem:hover{color:var(--braise);}
+  .menu .mitem:hover .mname{text-decoration:underline;text-decoration-color:var(--yolk);text-underline-offset:3px;}
+  .menu .mitem:focus-visible{outline:2px solid var(--yolk);outline-offset:2px;}
+  .foot{margin-top:22px;text-align:center;font-size:11.5px;color:#A9926F;letter-spacing:.04em;}
+
+  /* —— 做法弹层 —— */
+  .overlay{position:fixed;inset:0;background:rgba(40,22,12,.55);backdrop-filter:blur(3px);display:flex;align-items:center;justify-content:center;padding:16px;z-index:50;opacity:0;pointer-events:none;transition:opacity .25s ease;}
+  .overlay.open{opacity:1;pointer-events:auto;}
+  .sheet{background:var(--card);width:100%;max-width:560px;max-height:88dvh;overflow:auto;border-radius:10px;border:1px solid var(--line);padding:28px 26px 32px;position:relative;box-shadow:0 30px 60px -20px rgba(40,22,12,.6);transform:translateY(18px) scale(.98);transition:transform .28s cubic-bezier(.2,.8,.25,1);}
+  .overlay.open .sheet{transform:none;}
+  @media(max-width:520px){.overlay{align-items:flex-end;padding:0;}.sheet{max-width:none;border-radius:16px 16px 0 0;max-height:90dvh;transform:translateY(100%);}.overlay.open .sheet{transform:none;}}
+  .sheet-close{position:absolute;top:14px;right:14px;width:36px;height:36px;border-radius:50%;border:1px solid var(--line);background:#fff;color:var(--ink-soft);font-size:18px;cursor:pointer;display:grid;place-items:center;line-height:1;}
+  .sheet-close:hover{background:var(--paper);}
+  .sheet-close:focus-visible{outline:3px solid var(--yolk);outline-offset:2px;}
+  .sheet-no{font-family:"Noto Serif SC",serif;font-size:12px;font-weight:700;color:var(--ink-soft);letter-spacing:.12em;}
+  .sheet-name{font-family:"Noto Serif SC",serif;font-weight:700;font-size:30px;color:var(--braise);margin:2px 0 14px;padding-right:36px;}
+  .sheet-sec{margin-top:22px;}
+  .sheet-sec h3{font-size:13px;font-weight:700;letter-spacing:.14em;color:var(--tomato);margin:0 0 12px;display:flex;align-items:center;gap:8px;}
+  .sheet-sec h3::before{content:"";width:14px;height:2px;background:var(--tomato);display:inline-block;}
+  .ing-line{font-size:14.5px;line-height:1.95;color:var(--ink);}
+  .steps{margin:0;padding:0;counter-reset:s;list-style:none;}
+  .steps li{position:relative;padding:0 0 16px 40px;font-size:14.5px;line-height:1.65;color:var(--ink);}
+  .steps li::before{counter-increment:s;content:counter(s);position:absolute;left:0;top:0;width:25px;height:25px;border-radius:50%;background:var(--braise);color:#FFF7EE;font-family:"Noto Serif SC",serif;font-size:13px;font-weight:700;display:grid;place-items:center;}
+  .steps li:not(:last-child)::after{content:"";position:absolute;left:12px;top:27px;bottom:3px;width:2px;background:var(--line);}
+  .tip{margin-top:20px;background:#FBF1D8;border:1px dashed #E4C98A;border-radius:6px;padding:12px 14px;font-size:13.5px;color:#8A6A1E;line-height:1.65;}
+
+  @keyframes rise{from{opacity:0;transform:translateY(14px) scale(.985);}to{opacity:1;transform:none;}}
+  @keyframes pop{0%{transform:scale(.6) rotate(-7deg);opacity:0;}60%{transform:scale(1.08) rotate(-7deg);}100%{transform:scale(1) rotate(-7deg);opacity:1;}}
+  .seal{animation:pop .5s ease both;}
+  @media(prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important;}}
+</style>
+</head>
+<body>
+  <main class="ticket">
+    <div class="head">
+      <div>
+        <div class="kicker">今日厨房 · 明日菜单</div>
+        <h1 class="title">明天吃什么</h1>
+        <p class="subtitle">从 <b>31</b> 道家常菜里，随手给明天定 <b>两道</b>菜。<br>规则只有一条：两道菜的主料不撞车。点菜名看做法。</p>
+      </div>
+      <div class="seal" aria-hidden="true">
+        <span class="seal-top">明日</span>
+        <span class="seal-date" id="sealDate">—</span>
+        <span class="seal-dow" id="sealDow">—</span>
+      </div>
+    </div>
+    <hr class="perf">
+    <button class="draw" id="drawBtn">抽明天的菜</button>
+    <section class="result" id="result" hidden aria-live="polite">
+      <div class="stamp-ok"><span class="tick">✓</span><span>主料不重复，放心下单</span></div>
+      <div class="picks" id="picks"></div>
+      <div class="again-row"><button class="again" id="againBtn">换一组</button></div>
+    </section>
+    <details class="menu">
+      <summary><span class="arrow">▸</span> 查看全部 31 道菜（点击看做法）</summary>
+      <ol id="menuList"></ol>
+    </details>
+    <p class="foot">主料相同的菜不会被同时选中 · 共 <span id="pairCount">—</span> 种合法搭配</p>
+  </main>
+
+  <div class="overlay" id="overlay" role="dialog" aria-modal="true" aria-labelledby="sheetName">
+    <div class="sheet" id="sheet">
+      <button class="sheet-close" id="sheetClose" aria-label="关闭">✕</button>
+      <div class="sheet-no" id="sheetNo"></div>
+      <h2 class="sheet-name" id="sheetName"></h2>
+      <div class="chips" id="sheetChips"></div>
+      <div class="sheet-sec"><h3>用料</h3><p class="ing-line" id="sheetIng"></p></div>
+      <div class="sheet-sec"><h3>做法</h3><ol class="steps" id="sheetSteps"></ol></div>
+      <div id="sheetTipWrap"></div>
+    </div>
+  </div>
+
+<script>
+  const ING = {
+    番茄:["番茄","🍅"],鸡蛋:["鸡蛋","🥚"],猪肉:["猪肉","🐷"],牛肉:["牛肉","🐄"],
+    鸡肉:["鸡肉","🐔"],虾:["虾","🦐"],鱼:["鱼","🐟"],银鱼:["银鱼","🐠"],
+    蟹柳:["蟹柳","🦀"],豆腐:["豆腐","🫛"],玉米:["玉米","🌽"],胡萝卜:["胡萝卜","🥕"],
+    土豆:["土豆","🥔"],娃娃菜:["娃娃菜","🥬"],冬瓜:["冬瓜","🥒"],西葫芦:["西葫芦","🥒"],
+    丝瓜:["丝瓜","🥒"],菌菇:["菌菇","🍄"]
+  };
+
+  const DISHES = [
+    {n:1,name:"番茄炒鸡蛋",tags:["番茄","鸡蛋"],ing:"番茄 2 个、鸡蛋 3 个、葱花、盐、少许糖、食用油",steps:["鸡蛋打散加少许盐；番茄去皮切块。","热油倒入蛋液，凝固后划散盛出。","余油下番茄块中火炒出汤汁，加少许糖、盐。","倒回炒蛋翻匀，汤汁浓稠后撒葱花出锅。"]},
+    {n:2,name:"家常蒸肉饼",tags:["猪肉"],ing:"猪肉末 300g、鸡蛋 1 个、姜末、生抽、料酒、淀粉、葱花",steps:["肉末加姜末、生抽、料酒、少许盐、淀粉，顺一个方向搅上劲。","打入鸡蛋继续搅匀，分次加少量清水让肉馅更嫩。","平铺入盘，压成厚薄均匀的肉饼。","水开后中火蒸 15 分钟，出锅撒葱花、淋一勺热油。"]},
+    {n:3,name:"清蒸鲈鱼",tags:["鱼"],ing:"鲈鱼 1 条、姜丝、葱丝、蒸鱼豉油、料酒、食用油",steps:["鲈鱼洗净背部划几刀，抹盐和料酒，铺姜丝腌 10 分钟。","水开后大火蒸 8 分钟，倒掉盘中腥水。","铺上新鲜葱丝、姜丝，淋蒸鱼豉油。","浇一勺滚烫热油激出香味即可。"]},
+    {n:4,name:"肉末蒸蛋",tags:["猪肉","鸡蛋"],ing:"鸡蛋 2 个、猪肉末 80g、温水、生抽、料酒、葱花",steps:["肉末用少许生抽、料酒腌一下，下锅炒散变色。","鸡蛋打散，加约 1.5 倍温水和少许盐搅匀，过筛去泡。","蛋液上铺炒好的肉末，盖保鲜膜扎几个孔。","中小火蒸 12 分钟，淋生抽撒葱花。"],tip:"水温用温水、蒸时盖膜，蛋羹更光滑不蜂窝。"},
+    {n:5,name:"红烧肉",tags:["猪肉"],ing:"五花肉 500g、冰糖、姜、葱、八角、生抽、老抽、料酒",steps:["五花肉切块冷水下锅焯水，撇沫捞出。","锅内少油炒冰糖至焦糖色，下肉块翻炒裹色。","加姜、葱、八角、料酒、生抽老抽，倒热水没过肉。","大火烧开转小火炖 50 分钟，最后大火收汁。"]},
+    {n:6,name:"虾仁蒸蛋羹",tags:["虾","鸡蛋"],ing:"鸡蛋 2 个、虾仁数只、温水、盐、香油、生抽、葱花",steps:["虾仁去虾线，用少许料酒、盐腌一下。","鸡蛋打散加 1.5 倍温水、少许盐，过筛入碗。","盖膜扎孔，中小火蒸 8 分钟至半凝固，摆上虾仁。","继续蒸 5 分钟，淋香油、生抽，撒葱花。"]},
+    {n:7,name:"番茄牛肉末豆腐",tags:["番茄","牛肉","豆腐"],ing:"牛肉末 150g、嫩豆腐 1 盒、番茄 2 个、生抽、料酒、淀粉水、葱花",steps:["牛肉末加生抽、料酒腌；豆腐切块；番茄去皮切丁。","热油炒牛肉末至变色盛出。","下番茄丁炒出沙，加少许水煮成番茄汤。","放豆腐块轻推煮 3 分钟，回牛肉末，淀粉水勾芡撒葱花。"]},
+    {n:8,name:"蔬菜猪肉丸子汤",tags:["猪肉"],ing:"猪肉末 250g、青菜、胡萝卜、鸡蛋 1 个、姜末、淀粉、盐、香油",steps:["肉末加姜末、盐、淀粉、鸡蛋，顺方向搅上劲。","锅中水烧温，用勺挖肉丸下锅。","丸子浮起后加胡萝卜片煮软。","最后下青菜，调盐，淋几滴香油。"]},
+    {n:9,name:"番茄烩虾滑",tags:["番茄","虾"],ing:"虾滑（或虾泥）200g、番茄 2 个、生抽、盐、淀粉水、葱花",steps:["番茄去皮切丁，热油炒出沙，加水煮开。","用勺把虾滑挤成小球下入番茄汤。","中火煮 3-4 分钟至虾滑熟透。","调盐，淀粉水勾薄芡，撒葱花。"]},
+    {n:10,name:"银鱼炒蛋",tags:["银鱼","鸡蛋"],ing:"银鱼 100g、鸡蛋 3 个、葱花、盐、料酒",steps:["银鱼洗净沥干，加少许料酒去腥。","鸡蛋打散，加盐、葱花、银鱼拌匀。","热油倒入蛋液，中火不动等底部凝固。","翻面炒散至金黄即可。"]},
+    {n:11,name:"红烧猪蹄",tags:["猪肉"],ing:"猪蹄 2 只、冰糖、姜、葱、八角、生抽、老抽、料酒",steps:["猪蹄焯水撇沫捞出。","锅中炒冰糖至焦糖色，下猪蹄翻炒裹色。","加姜葱八角、生抽老抽料酒，倒热水没过。","大火烧开转小火炖 90 分钟，再大火收汁。"]},
+    {n:12,name:"玉米炖排骨",tags:["玉米","猪肉"],ing:"排骨 400g、玉米 2 根、胡萝卜、姜、料酒、盐",steps:["排骨冷水下锅焯水撇沫。","排骨入砂锅加姜片、料酒、足量热水。","大火烧开转小火炖 40 分钟。","下玉米段、胡萝卜再炖 20 分钟，调盐。"]},
+    {n:13,name:"胡萝卜玉米炒鸡丁",tags:["胡萝卜","玉米","鸡肉"],ing:"鸡胸肉 200g、玉米粒、胡萝卜丁、生抽、料酒、淀粉、盐",steps:["鸡丁加生抽、料酒、淀粉腌 10 分钟。","热油滑炒鸡丁至变色盛出。","下胡萝卜丁、玉米粒炒 2 分钟。","回鸡丁炒匀，调盐出锅。"]},
+    {n:14,name:"水煮虾",tags:["虾"],ing:"鲜虾 400g、姜、葱、料酒；蘸料：生抽、醋、姜末",steps:["虾洗净，剪去虾枪、挑去虾线。","锅中水加姜片、葱段、料酒烧开。","下虾煮 2-3 分钟，虾身弯曲变红即捞出。","配姜末生抽蘸料食用。"]},
+    {n:15,name:"胡萝卜土豆炖牛腩",tags:["胡萝卜","土豆","牛肉"],ing:"牛腩 500g、土豆、胡萝卜、姜、葱、八角、生抽、老抽、料酒",steps:["牛腩切块冷水下锅焯水。","炒香姜葱八角，下牛腩加生抽老抽料酒炒匀。","加热水没过，大火烧开转小火炖 60 分钟。","下土豆、胡萝卜块再炖 25 分钟至软糯收汁。"]},
+    {n:16,name:"娃娃菜烩肉末",tags:["娃娃菜","猪肉"],ing:"娃娃菜 1 棵、猪肉末 120g、蒜末、生抽、料酒、盐、淀粉水",steps:["娃娃菜切段；肉末加生抽、料酒腌一下。","热油炒香蒜末，下肉末炒散。","放娃娃菜炒软，加少许水焖 2 分钟。","调盐，淀粉水勾薄芡。"]},
+    {n:17,name:"胡萝卜鸡肉泥烩土豆",tags:["胡萝卜","鸡肉","土豆"],ing:"鸡胸肉、土豆、胡萝卜、姜、生抽（宝宝版可不放盐）",steps:["鸡胸剁成泥，加少许生抽抓匀。","土豆、胡萝卜切小丁。","热油炒鸡肉泥变色，下土豆、胡萝卜丁。","加水焖煮至土豆软烂，调淡盐收汁。"],tip:"给小宝宝吃可省去盐，靠胡萝卜玉米的自然甜味。"},
+    {n:18,name:"虾仁炒蛋",tags:["虾","鸡蛋"],ing:"虾仁 150g、鸡蛋 3 个、葱花、盐、料酒",steps:["虾仁去虾线，加料酒、盐腌；鸡蛋打散加盐。","热油快炒虾仁至变色盛出。","倒蛋液炒至半凝固。","回虾仁炒匀，撒葱花出锅。"]},
+    {n:19,name:"冬瓜肉丸汤",tags:["冬瓜","猪肉"],ing:"猪肉末 250g、冬瓜、鸡蛋 1 个、姜末、淀粉、盐、香菜、香油",steps:["肉末加姜末、盐、淀粉、鸡蛋搅上劲。","冬瓜去皮切片，锅中水烧温。","挤肉丸下锅，浮起后下冬瓜片。","煮至冬瓜透明，调盐，撒香菜、淋香油。"]},
+    {n:20,name:"红烧桂鱼",tags:["鱼"],ing:"桂鱼 1 条、姜、葱、蒜、生抽、老抽、糖、料酒",steps:["桂鱼两面划刀，抹盐料酒，煎至两面金黄。","下姜葱蒜爆香，加生抽老抽、糖、料酒和水。","中火烧 8 分钟，中途翻面浇汁。","大火收汁，撒葱花。"]},
+    {n:21,name:"土豆焖牛腩碎",tags:["土豆","牛肉"],ing:"牛腩 300g（切碎）、土豆、姜、生抽、老抽、料酒",steps:["牛腩碎焯水；锅中炒香姜片。","下牛腩碎加生抽老抽料酒炒匀。","加热水炖 40 分钟。","下土豆丁焖 20 分钟至软糯收汁。"]},
+    {n:22,name:"娃娃菜虾滑煲",tags:["娃娃菜","虾"],ing:"娃娃菜、虾滑 200g、蒜、高汤或清水、盐、淀粉水、葱花",steps:["娃娃菜切段铺入砂锅。","加高汤或清水煮开。","虾滑挤成小球放入，中火煮 5 分钟。","调盐勾薄芡，撒葱花。"]},
+    {n:23,name:"嫩豆腐烩鸡肉末",tags:["豆腐","鸡肉"],ing:"嫩豆腐 1 盒、鸡肉末 120g、生抽、料酒、盐、淀粉水、葱花",steps:["鸡肉末加生抽、料酒腌；豆腐切块。","热油炒香鸡肉末至变色。","加少许水，放豆腐块轻推煮 3 分钟。","调盐勾薄芡，撒葱花。"]},
+    {n:24,name:"菌菇炖肋排肉",tags:["菌菇","猪肉"],ing:"肋排 400g、菌菇（香菇/口蘑等）、姜、料酒、盐、葱花",steps:["肋排焯水撇沫。","入锅加姜片、料酒和热水炖 40 分钟。","下洗净的菌菇再炖 20 分钟。","调盐，撒葱花。"]},
+    {n:25,name:"银鱼蒸蛋",tags:["银鱼","鸡蛋"],ing:"鸡蛋 2 个、银鱼 50g、温水、盐、料酒、生抽、葱花",steps:["银鱼洗净沥干，用料酒去腥。","鸡蛋打散加 1.5 倍温水和盐，过筛入碗。","撒入银鱼，盖膜扎孔。","中小火蒸 12 分钟，淋生抽撒葱花。"]},
+    {n:26,name:"番茄烩鸡肉丁",tags:["番茄","鸡肉"],ing:"鸡胸肉 200g、番茄 2 个、生抽、料酒、淀粉、盐、葱花",steps:["鸡丁加生抽、料酒、淀粉腌；番茄去皮切丁。","滑炒鸡丁变色盛出。","下番茄炒出沙，加水煮成汤。","回鸡丁煮入味，调盐勾薄芡。"]},
+    {n:27,name:"西葫芦肉末蒸蛋",tags:["西葫芦","猪肉","鸡蛋"],ing:"鸡蛋 2 个、西葫芦、猪肉末 80g、温水、盐、生抽、葱花",steps:["西葫芦切小丁，肉末炒散变色。","鸡蛋加 1.5 倍温水、盐打匀过筛。","拌入西葫芦和肉末入碗，盖膜扎孔。","中小火蒸 13 分钟，淋生抽撒葱花。"]},
+    {n:28,name:"红烧带鱼",tags:["鱼"],ing:"带鱼 500g、姜、葱、蒜、生抽、老抽、糖、料酒、面粉",steps:["带鱼切段，抹盐料酒，薄裹一层面粉。","煎至两面金黄盛出。","爆香姜葱蒜，加生抽老抽、糖、料酒和水。","放带鱼烧 8 分钟，大火收汁。"]},
+    {n:29,name:"凉拌蟹柳蘑菇",tags:["蟹柳","菌菇"],ing:"蟹柳、口蘑（或白蘑菇）、蒜末、生抽、醋、香油、小葱",steps:["蘑菇切片焯水 1 分钟，过凉沥干。","蟹柳撕成条，焯水 30 秒。","蒜末、生抽、醋、香油调成料汁。","与蟹柳、蘑菇拌匀，撒葱花。"]},
+    {n:30,name:"白玉菇滑嫩肉片",tags:["菌菇","猪肉"],ing:"里脊肉 200g、白玉菇、青椒、蒜、生抽、料酒、淀粉、盐",steps:["肉片加生抽、料酒、淀粉腌 10 分钟。","白玉菇撕散焯水。","热油滑炒肉片至变色盛出。","下白玉菇、青椒炒匀，回肉片调生抽、盐出锅。"]},
+    {n:31,name:"丝瓜烩虾滑",tags:["丝瓜","虾"],ing:"丝瓜 2 根、虾滑 200g、姜丝、盐、淀粉水",steps:["丝瓜去皮切滚刀块。","锅中加水、姜丝烧开。","虾滑挤成小球下锅煮 2 分钟。","下丝瓜煮 3 分钟至变软，调盐勾薄芡。"]}
+  ];
+
+  const byN = {}; DISHES.forEach(d=>byN[d.n]=d);
+
+  const disjoint = (a,b)=> a.tags.every(t=> !b.tags.includes(t));
+  const PAIRS = [];
+  for(let i=0;i<DISHES.length;i++)
+    for(let j=i+1;j<DISHES.length;j++)
+      if(disjoint(DISHES[i],DISHES[j])) PAIRS.push([DISHES[i],DISHES[j]]);
+  document.getElementById("pairCount").textContent = PAIRS.length;
+
+  let lastKey = "";
+  function pickPair(){
+    let pair, key, tries=0;
+    do{
+      pair = PAIRS[Math.floor(Math.random()*PAIRS.length)];
+      if(Math.random()<0.5) pair=[pair[1],pair[0]];
+      key = [pair[0].n,pair[1].n].sort((a,b)=>a-b).join("-");
+    }while(key===lastKey && PAIRS.length>1 && ++tries<8);
+    lastKey = key;
+    return pair;
+  }
+
+  function chipHTML(tag){const [label,em]=ING[tag]||[tag,""];return '<span class="chip"><span class="em">'+em+'</span>'+label+'</span>';}
+  function dishHTML(d){
+    return '<article class="dish"><div class="no">第 '+d.n+' 道</div>'
+      +'<button class="namebtn" data-n="'+d.n+'"><span class="name-text">'+d.name+'</span><span class="go">看做法 →</span></button>'
+      +'<div class="chips">'+d.tags.map(chipHTML).join("")+'</div></article>';
+  }
+
+  const picksEl=document.getElementById("picks");
+  const resultEl=document.getElementById("result");
+  function draw(){
+    const [a,b]=pickPair();
+    picksEl.innerHTML=""; void picksEl.offsetWidth;
+    picksEl.innerHTML=dishHTML(a)+dishHTML(b);
+    resultEl.hidden=false;
+    document.getElementById("drawBtn").textContent="再抽明天的菜";
+  }
+  document.getElementById("drawBtn").addEventListener("click",draw);
+  document.getElementById("againBtn").addEventListener("click",draw);
+
+  document.getElementById("menuList").innerHTML =
+    DISHES.map(d=>'<li><button class="mitem" data-n="'+d.n+'"><span>'+String(d.n).padStart(2,"0")+'</span><span class="mname">'+d.name+'</span></button></li>').join("");
+
+  // —— 做法弹层 ——
+  const overlay=document.getElementById("overlay");
+  const sheet=document.getElementById("sheet");
+  let lastFocus=null;
+  function openRecipe(n){
+    const d=byN[n]; if(!d) return;
+    document.getElementById("sheetNo").textContent="第 "+d.n+" 道 · 做法";
+    document.getElementById("sheetName").textContent=d.name;
+    document.getElementById("sheetChips").innerHTML=d.tags.map(chipHTML).join("");
+    document.getElementById("sheetIng").textContent=d.ing;
+    document.getElementById("sheetSteps").innerHTML=d.steps.map(s=>'<li>'+s+'</li>').join("");
+    document.getElementById("sheetTipWrap").innerHTML=d.tip?'<div class="tip">💡 '+d.tip+'</div>':"";
+    lastFocus=document.activeElement;
+    overlay.classList.add("open");
+    document.body.style.overflow="hidden";
+    sheet.scrollTop=0;
+    document.getElementById("sheetClose").focus();
+  }
+  function closeRecipe(){
+    overlay.classList.remove("open");
+    document.body.style.overflow="";
+    if(lastFocus&&lastFocus.focus) lastFocus.focus();
+  }
+  document.getElementById("sheetClose").addEventListener("click",closeRecipe);
+  overlay.addEventListener("click",e=>{ if(e.target===overlay) closeRecipe(); });
+  document.addEventListener("keydown",e=>{ if(e.key==="Escape"&&overlay.classList.contains("open")) closeRecipe(); });
+
+  // 事件委托：菜名 + 完整菜单都可点
+  document.addEventListener("click",e=>{
+    const t=e.target.closest("[data-n]");
+    if(t){ openRecipe(parseInt(t.getAttribute("data-n"),10)); }
+  });
+
+  // 明日日期印章
+  (function(){
+    const t=new Date(); t.setDate(t.getDate()+1);
+    const dows=["周日","周一","周二","周三","周四","周五","周六"];
+    document.getElementById("sealDate").textContent=(t.getMonth()+1)+"/"+t.getDate();
+    document.getElementById("sealDow").textContent=dows[t.getDay()];
+  })();
+</script>
+</body>
+</html>
